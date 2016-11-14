@@ -1,0 +1,4 @@
+node_modules
+.idea
+src/*-compiled.js
+src/*-compiled.js.map
