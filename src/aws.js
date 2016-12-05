@@ -3,7 +3,6 @@
 // Dependencies
 const AWS = require('aws-sdk');
 const _ = require('lodash');
-const merge = require('lodash/fp/merge');
 
 
 // Export
@@ -41,7 +40,7 @@ module.exports = function(awsSettings, module_options) {
   };
 
   // configurable module behavior options
-  if (module_options) options = merge(defaultOptions, module_options);
+  if (module_options) options = _.merge(defaultOptions, module_options);
 
   // settings for AWS
   var settings;
@@ -60,27 +59,21 @@ module.exports = function(awsSettings, module_options) {
     settings = {};
   }
 
-  if (options.useProcessEnv && options.mapProcessEnv) {
-    const map = _.invert(options.processEnvMap);
+  if (options.useProcessEnv) {
+
+    const map = _.invert(options.mapProcessEnv? options.processEnvMap : defaultOptions.processEnvMap);
 
     // override settings from awsSettings object based on process env
-    merge(settings,_.pick(
-        transform(map, process.env),
-        Object.keys(options.processEnvMap)
-      )
-    );
+    settings = _.merge(settings, _.pick(transform(map, process.env), Object.keys(options.processEnvMap)));
   }
 
   // initialize AWS based on configurable module options
   if (!settings.key_id && !settings.key) {
     if (options.useIniCredentials) {
-      if (!options.defaultIniProfileAllowed && !settings.profile)
-        throw new Error("Error initializing AWS: profile not specified");
+      if (!options.defaultIniProfileAllowed && !settings.profile) throw new Error("Error initializing AWS: profile not specified");
 
       AWS.config.credentials = new AWS.SharedIniFileCredentials(settings);
-
-    } else
-      throw new Error("Error initializing AWS: unusable module configuration");
+    } else throw new Error("Error initializing AWS: unusable module configuration");
   } else if (options.mapProcessEnv) {
     AWS.config.update({
       accessKeyId: settings.key_id,

@@ -1,4 +1,5 @@
 node_modules
 .idea
-src/*-compiled.js
-src/*-compiled.js.map
+*/*-compiled.js
+*/*-compiled.js.map
+lib/*
