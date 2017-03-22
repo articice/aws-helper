@@ -16,15 +16,15 @@ module.exports = function(awsSettings, module_options) {
     settingsMap: { //TODO transform awsSettings object according to map in module behavior options
       profile: "profile",
       region: "region",
-      key_id: "key_id",
-      key: "key"
+      accessKeyId: "key_id",
+      secretAccessKey: "key"
     },
 
     useProcessEnv: true,
     mapProcessEnv: false,
     processEnvMap: {
-      key_id: "AWS_ACCESS_KEY_ID",
-      key: "AWS_SECRET_ACCESS_KEY",
+      accessKeyId: "AWS_ACCESS_KEY_ID",
+      secretAccessKey: "AWS_SECRET_ACCESS_KEY",
       profile: "AWS_PROFILE",
       region: "AWS_REGION"
     },
@@ -60,25 +60,19 @@ module.exports = function(awsSettings, module_options) {
   }
 
   if (options.useProcessEnv) {
-
-    const map = _.invert(options.mapProcessEnv? options.processEnvMap : defaultOptions.processEnvMap);
-
-    // override settings from awsSettings object based on process env
-    settings = _.merge(settings, _.pick(transform(map, process.env), Object.keys(options.processEnvMap)));
-  }
-
+    if (options.mapProcessEnv) {
+      const map = _.invert(options.processEnvMap);
+      // override settings from awsSettings object based on process env
+      settings = _.merge(settings, _.pick(transform(map, process.env), Object.keys(options.processEnvMap)));
+    }
+    AWS.config.update(settings);
+  } else if (!settings.accessKeyId && !settings.secretAccessKey) {
   // initialize AWS based on configurable module options
-  if (!settings.key_id && !settings.key) {
     if (options.useIniCredentials) {
       if (!options.defaultIniProfileAllowed && !settings.profile) throw new Error("Error initializing AWS: profile not specified");
 
       AWS.config.credentials = new AWS.SharedIniFileCredentials(settings);
     } else throw new Error("Error initializing AWS: unusable module configuration");
-  } else if (options.mapProcessEnv) {
-    AWS.config.update({
-      accessKeyId: settings.key_id,
-      secretAccessKey: settings.key
-    });
   }
 
   // Region update
