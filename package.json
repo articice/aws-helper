@@ -1,6 +1,6 @@
 {
   "name": "aws-helper",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "lib/aws.js",
   "scripts": {
